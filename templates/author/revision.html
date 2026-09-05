@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Upload Revision{% endblock %}
+
+{% block content %}
+<div class="author-header">
+    <div class="container">
+        <h1>Upload Revision</h1>
+        <p>{{ submission.paper_id }} — {{ submission.title|truncate(80) }}</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width:600px;">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>Revised Manuscript (PDF, DOC, DOCX)</label>
+                        <input type="file" name="revision_file" class="form-control" accept=".pdf,.doc,.docx,.odt,.rtf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload Revision</button>
+                    <a href="{{ url_for('author.paper_detail', paper_id=submission.paper_id) }}" class="btn btn-outline">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

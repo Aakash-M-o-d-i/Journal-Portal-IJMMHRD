@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Internal Error{% endblock %}
+
+{% block content %}
+<section class="section" style="text-align:center;padding:6rem 0;">
+    <div class="container" style="max-width:540px;">
+        <div style="font-family:var(--font-heading);font-size:5.5rem;font-weight:800;color:var(--error);line-height:1;margin-bottom:0.5rem;">500</div>
+        <h2 style="font-size:1.85rem;color:var(--primary);margin-bottom:0.75rem;">Internal Server Error</h2>
+        <p style="color:var(--gray-600);margin-bottom:2rem;line-height:1.7;">An unexpected error occurred while processing your request. Our technical team has been notified.</p>
+        <a href="{{ url_for('public.home') }}" class="btn btn-primary btn-lg">Return to Home Page</a>
+    </div>
+</section>
+{% endblock %}

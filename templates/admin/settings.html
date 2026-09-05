@@ -1,0 +1,41 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header"><h1>Journal Settings</h1></div>
+
+<div class="card" style="max-width:700px;">
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <h3 style="font-family:var(--font-body);margin-bottom:1rem;">Journal Information</h3>
+            <div class="form-group"><label>Journal Name</label><input type="text" name="journal_name" class="form-control" value="{{ settings.get('journal_name', '') }}"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Abbreviation</label><input type="text" name="journal_abbr" class="form-control" value="{{ settings.get('journal_abbr', '') }}"></div>
+                <div class="form-group"><label>ISSN</label><input type="text" name="journal_issn" class="form-control" value="{{ settings.get('journal_issn', '') }}"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Journal Email</label><input type="email" name="journal_email" class="form-control" value="{{ settings.get('journal_email', '') }}"></div>
+                <div class="form-group"><label>Journal URL</label><input type="url" name="journal_url" class="form-control" value="{{ settings.get('journal_url', '') }}"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>DOI Prefix</label><input type="text" name="doi_prefix" class="form-control" value="{{ settings.get('doi_prefix', '') }}"></div>
+                <div class="form-group"><label>Publication Frequency</label><input type="text" name="publication_frequency" class="form-control" value="{{ settings.get('publication_frequency', '') }}"></div>
+            </div>
+
+            <hr style="margin:1.5rem 0;border-color:var(--gray-200);">
+            <h3 style="font-family:var(--font-body);margin-bottom:1rem;">Contact</h3>
+            <div class="form-group"><label>Contact Email</label><input type="email" name="contact_email" class="form-control" value="{{ settings.get('contact_email', '') }}"></div>
+            <div class="form-group"><label>Contact Phone</label><input type="text" name="contact_phone" class="form-control" value="{{ settings.get('contact_phone', '') }}"></div>
+            <div class="form-group"><label>Contact Address</label><textarea name="contact_address" class="form-control" rows="2">{{ settings.get('contact_address', '') }}</textarea></div>
+
+            <hr style="margin:1.5rem 0;border-color:var(--gray-200);">
+            <h3 style="font-family:var(--font-body);margin-bottom:1rem;">Footer</h3>
+            <div class="form-group"><label>Footer Text</label><input type="text" name="footer_text" class="form-control" value="{{ settings.get('footer_text', '') }}"></div>
+
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

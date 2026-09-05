@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IJMMHRD{% endblock %} | {{ site_settings.get('journal_abbr', 'IJMMHRD') }}</title>
+    <meta name="description" content="{% block description %}{{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}{% endblock %}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% block body_class %}{% endblock %}
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-info">
+                <span class="top-bar-badge">OPEN ACCESS</span>
+                <span>{{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}</span>
+            </div>
+            <div>
+                <span>ISSN: <strong>{{ site_settings.get('journal_issn', 'XXXX-XXXX') }}</strong></span>
+                <span style="margin:0 0.5rem;opacity:0.4;">|</span>
+                <a href="mailto:{{ site_settings.get('journal_email', 'editor@ijmmhrd.com') }}">{{ site_settings.get('journal_email', 'editor@ijmmhrd.com') }}</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('public.home') }}" class="navbar-brand">
+                <span class="brand-icon">IJ</span>
+                {{ site_settings.get('journal_abbr', 'IJMMHRD') }}
+            </a>
+
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ url_for('public.home') }}" class="nav-link {{ 'active' if request.endpoint == 'public.home' }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Authors ▾</a>
+                    <ul class="nav-dropdown">
+                        <li><a href="{{ url_for('public.paper_format') }}">Paper Format</a></li>
+                        <li><a href="{{ url_for('public.submit_paper') }}">Submit Paper</a></li>
+                        <li><a href="{{ url_for('public.track_paper') }}">Track Paper</a></li>
+                        <li><a href="{{ url_for('public.guidelines') }}">Author Guidelines</a></li>
+                        <li><a href="{{ url_for('public.how_to_publish') }}">How to Publish</a></li>
+                        <li><a href="{{ url_for('public.charges') }}">Processing Charges</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('public.research_areas') }}" class="nav-link {{ 'active' if 'research' in (request.endpoint or '') or 'discipline' in (request.endpoint or '') }}">Research Areas ▾</a>
+                    <ul class="nav-dropdown" style="min-width:280px;">
+                        {% for area_item in nav_research_areas[:9] %}
+                        <li><a href="{{ url_for('public.discipline_detail', slug=area_item.slug) }}">{{ area_item.name }} Journal</a></li>
+                        {% endfor %}
+                        <li style="border-top:1px solid var(--gray-200);"><a href="{{ url_for('public.research_areas') }}" style="font-weight:700;color:var(--primary);">View All Research Areas →</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ url_for('public.archives') }}" class="nav-link {{ 'active' if 'archive' in (request.endpoint or '') }}">Archives</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('public.about') }}" class="nav-link {{ 'active' if request.endpoint == 'public.about' }}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('public.contact') }}" class="nav-link {{ 'active' if request.endpoint == 'public.contact' }}">Contact</a>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="{{ url_for('public.submit_paper') }}" class="btn btn-gold btn-sm">Submit Paper</a>
+                <a href="{{ url_for('author.login') }}" class="btn btn-outline btn-sm">Author Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>{{ site_settings.get('journal_abbr', 'IJMMHRD') }}</h4>
+                    <p style="font-size:0.875rem;color:rgba(255,255,255,0.7);line-height:1.7;">
+                        {{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}
+                    </p>
+                    <p style="font-size:0.8125rem;color:var(--gold-light);margin-top:0.75rem;">
+                        Peer-Reviewed | Open Access | Double Blind Review
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h4>For Authors</h4>
+                    <ul>
+                        <li><a href="{{ url_for('public.submit_paper') }}">Submit Paper</a></li>
+                        <li><a href="{{ url_for('public.track_paper') }}">Track Paper</a></li>
+                        <li><a href="{{ url_for('public.guidelines') }}">Author Guidelines</a></li>
+                        <li><a href="{{ url_for('public.paper_format') }}">Paper Format</a></li>
+                        <li><a href="{{ url_for('public.charges') }}">Processing Charges</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Journal Info</h4>
+                    <ul>
+                        <li><a href="{{ url_for('public.about') }}">About Journal</a></li>
+                        <li><a href="{{ url_for('public.editorial_board') }}">Editorial Board</a></li>
+                        <li><a href="{{ url_for('public.archives') }}">Browse Archives</a></li>
+                        <li><a href="{{ url_for('public.call_for_papers') }}">Call for Papers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li>Email: {{ site_settings.get('contact_email', 'editor@ijmmhrd.com') }}</li>
+                        {% if site_settings.get('contact_phone') %}<li>Phone: {{ site_settings.get('contact_phone') }}</li>{% endif %}
+                        {% if site_settings.get('contact_address') %}<li style="font-size:0.8125rem;line-height:1.5;">{{ site_settings.get('contact_address') }}</li>{% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                {{ site_settings.get('footer_text', '© 2026 IJMMHRD. All rights reserved.') }}
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

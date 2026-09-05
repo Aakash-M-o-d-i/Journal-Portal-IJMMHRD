@@ -1,0 +1,49 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Submissions{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Manuscript Submissions</h1>
+</div>
+
+<div class="filter-bar">
+    <a href="{{ url_for('admin.submissions') }}" class="{{ 'active' if not current_status }}">All Submissions</a>
+    {% for s in statuses %}
+    <a href="{{ url_for('admin.submissions', status=s) }}" class="{{ 'active' if current_status == s }}">{{ s.replace('_', ' ').title() }}</a>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div class="table-responsive" style="border:none;box-shadow:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Paper ID</th>
+                    <th>Title</th>
+                    <th>Corresponding Author</th>
+                    <th>Submitted Date</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td><a href="{{ url_for('admin.submission_detail', sub_id=sub.id) }}" style="font-weight:700;">{{ sub.paper_id }}</a></td>
+                    <td>{{ sub.title|truncate(50) }}</td>
+                    <td>{{ sub.submitted_by_name }}</td>
+                    <td>{{ sub.submitted_at.strftime('%d %b %Y') }}</td>
+                    <td><span class="badge badge-{{ sub.status }}">{{ sub.status_display }}</span></td>
+                    <td style="text-align:right;">
+                        <a href="{{ url_for('admin.submission_detail', sub_id=sub.id) }}" class="btn btn-sm btn-outline">Review Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not submissions %}
+                <tr><td colspan="6" class="text-center text-muted" style="padding:2.5rem;">No submissions found for the selected filter.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin Users{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header"><h1>User Accounts</h1></div>
+
+<div class="admin-grid-2col">
+    <div class="card">
+        <div class="card-header">Add User Account</div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('admin.add_user') }}" data-validate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group"><label>Full Name *</label><input type="text" name="full_name" class="form-control" placeholder="Full Name" required></div>
+                <div class="form-group"><label>Email *</label><input type="email" name="email" class="form-control" placeholder="user@ijmmhrd.com" required></div>
+                <div class="form-group"><label>Password *</label><input type="password" name="password" class="form-control" placeholder="••••••••" required></div>
+                <div class="form-group"><label>System Role</label>
+                    <select name="role" class="form-control">
+                        <option value="admin">Admin</option>
+                        <option value="editor">Editor</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Create User Account</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">User Accounts List</div>
+        <div class="table-responsive" style="border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.full_name }}</strong></td>
+                    <td>{{ u.email }}</td>
+                    <td><span class="badge badge-{{ 'published' if u.role == 'admin' else 'submitted' }}">{{ u.role }}</span></td>
+                    <td><span class="badge badge-{{ 'published' if u.is_active else 'draft' }}">{{ 'Active' if u.is_active else 'Inactive' }}</span></td>
+                    <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if u.id != current_user.id %}
+                        <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted text-small">(Current User)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

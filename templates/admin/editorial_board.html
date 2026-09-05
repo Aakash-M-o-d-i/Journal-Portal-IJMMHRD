@@ -1,0 +1,61 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Editorial Board{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header"><h1>Editorial Board</h1></div>
+
+<div class="admin-grid-2col">
+    <div class="card">
+        <div class="card-header">Add Board Member</div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('admin.add_board_member') }}" data-validate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group"><label>Full Name *</label><input type="text" name="full_name" class="form-control" placeholder="e.g., Dr. Jane Doe" required></div>
+                <div class="form-group"><label>Title</label><input type="text" name="title" class="form-control" placeholder="e.g., Professor, Dr."></div>
+                <div class="form-group"><label>Affiliation</label><input type="text" name="affiliation" class="form-control" placeholder="University / Institution"></div>
+                <div class="form-group"><label>Board Role</label><input type="text" name="board_role" class="form-control" placeholder="e.g., Editor-in-Chief, Associate Editor"></div>
+                <div class="form-group"><label>Display Order</label><input type="number" name="display_order" class="form-control" value="0"></div>
+                <button type="submit" class="btn btn-primary btn-sm">Add Member</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Current Editorial Board Members</div>
+        <div class="table-responsive" style="border:none;box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name & Title</th>
+                        <th>Role</th>
+                        <th>Affiliation</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for m in members %}
+                <tr>
+                    <td>{{ m.display_order }}</td>
+                    <td><strong>{{ m.full_name }}</strong>{% if m.title %}<br><span class="text-muted text-small">{{ m.title }}</span>{% endif %}</td>
+                    <td>{{ m.board_role or '-' }}</td>
+                    <td>{{ m.affiliation or '-' }}</td>
+                    <td><span class="badge badge-{{ 'published' if m.is_active else 'draft' }}">{{ 'Active' if m.is_active else 'Inactive' }}</span></td>
+                    <td>
+                        <form method="post" action="{{ url_for('admin.toggle_board_member', member_id=m.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline">{{ 'Deactivate' if m.is_active else 'Activate' }}</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not members %}
+                <tr><td colspan="6" class="text-center text-muted" style="padding:2rem;">No board members added yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

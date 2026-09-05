@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Editorial Board{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Editorial Board</h1>
+        <p>Distinguished scholars and experts leading our peer-review and publication standard.</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        {% if members %}
+        <div class="article-grid">
+            {% for m in members %}
+            <div class="card" style="border-top:4px solid var(--primary);">
+                <div class="card-body">
+                    <h3 style="font-family:var(--font-heading);font-size:1.3rem;margin-bottom:0.4rem;color:var(--primary);">{{ m.full_name }}</h3>
+                    {% if m.board_role %}<span class="badge badge-published" style="margin-bottom:0.85rem;">{{ m.board_role }}</span>{% endif %}
+                    {% if m.title %}<p style="font-size:0.95rem;color:var(--gray-700);font-weight:600;margin-bottom:0.3rem;">{{ m.title }}</p>{% endif %}
+                    {% if m.affiliation %}<p style="font-size:0.9rem;color:var(--gray-500);line-height:1.55;">{{ m.affiliation }}</p>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center" style="padding:3.5rem 1.75rem;color:var(--gray-500);">
+            <p>Editorial board list is currently being updated by the administration.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

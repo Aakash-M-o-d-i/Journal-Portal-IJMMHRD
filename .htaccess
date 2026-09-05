@@ -1,0 +1,3 @@
+PassengerEnabled On
+PassengerAppRoot /opt/lampp/htdocs/new_Simple_LB
+PassengerPython /usr/bin/python3

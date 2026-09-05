@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ submission.paper_id }}{% endblock %}
+
+{% block content %}
+<div class="author-header">
+    <div class="container">
+        <ul class="breadcrumb" style="margin-bottom:0.25rem;">
+            <li><a href="{{ url_for('author.dashboard') }}" style="color:rgba(255,255,255,0.6);">My Submissions</a></li>
+            <li style="color:#fff;">{{ submission.paper_id }}</li>
+        </ul>
+        <h1 style="font-size:1.25rem;">{{ submission.title }}</h1>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width:860px;">
+        <!-- Status -->
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-between align-center">
+                <span>Submission Status</span>
+                <span class="badge badge-{{ submission.status }}">{{ submission.status_display }}</span>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div><strong>Paper ID:</strong> {{ submission.paper_id }} <button class="copy-btn" data-copy="{{ submission.paper_id }}">Copy</button></div>
+                    <div><strong>Submitted:</strong> {{ submission.submitted_at.strftime('%B %d, %Y') }}</div>
+                </div>
+                {% if submission.decided_at %}
+                <p class="mt-2"><strong>Decision Date:</strong> {{ submission.decided_at.strftime('%B %d, %Y') }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="card mb-3">
+            <div class="card-header">Manuscript Details</div>
+            <div class="card-body">
+                <p><strong>Title:</strong> {{ submission.title }}</p>
+                {% if submission.abstract %}<p class="mt-2"><strong>Abstract:</strong> {{ submission.abstract }}</p>{% endif %}
+                {% if submission.keywords %}<p><strong>Keywords:</strong> {{ submission.keywords }}</p>{% endif %}
+                {% if submission.research_area %}<p><strong>Research Area:</strong> {{ submission.research_area }}</p>{% endif %}
+            </div>
+        </div>
+
+        <!-- Authors -->
+        <div class="card mb-3">
+            <div class="card-header">Authors</div>
+            <div class="card-body">
+                {% for a in submission.authors %}
+                <div class="mb-1">
+                    <strong>{{ a.full_name }}</strong>
+                    {% if a.is_corresponding %}<span class="badge badge-accepted">Corresponding</span>{% endif %}
+                    {% if a.email %}<br><span class="text-muted text-small">{{ a.email }}</span>{% endif %}
+                    {% if a.affiliation %}<br><span class="text-muted text-small">{{ a.affiliation }}</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Files -->
+        <div class="card mb-3">
+            <div class="card-header">Submitted Files</div>
+            <div class="card-body">
+                {% for f in submission.files %}
+                <div class="d-flex justify-between align-center mb-1">
+                    <span>{{ f.file_name }} <span class="badge badge-{{ 'accepted' if f.file_type == 'manuscript' else 'submitted' }}">{{ f.file_type }} v{{ f.version }}</span></span>
+                    <span class="text-muted text-small">{{ f.uploaded_at.strftime('%d %b %Y') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Review Comments (only visible ones) -->
+        {% set visible_reviews = [] %}
+        {% for assignment in submission.assignments %}
+        {% if assignment.review and assignment.review.comments_to_author %}
+        {% set _ = visible_reviews.append(assignment.review) %}
+        {% endif %}
+        {% endfor %}
+
+        {% if visible_reviews %}
+        <div class="card mb-3">
+            <div class="card-header">Reviewer Comments</div>
+            <div class="card-body">
+                {% for review in visible_reviews %}
+                <div class="mb-2">
+                    <span class="badge badge-{{ review.recommendation }}">{{ review.recommendation.replace('_', ' ').title() }}</span>
+                    <p class="mt-1">{{ review.comments_to_author }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Published Article -->
+        {% if submission.article and submission.article.published_at %}
+        <div class="card mb-3" style="border-left:4px solid var(--success);">
+            <div class="card-header" style="background:#f0fdf4;">Publication Details</div>
+            <div class="card-body">
+                <p><strong>Article ID:</strong> {{ submission.article.article_id }}</p>
+                {% if submission.article.doi %}<p><strong>DOI:</strong> <a href="{{ submission.article.doi_url }}" class="doi-link">{{ submission.article.doi }}</a> <button class="copy-btn" data-copy="{{ submission.article.doi }}">Copy</button></p>{% endif %}
+                {% if submission.article.issue %}<p><strong>Published in:</strong> {{ submission.article.issue.display_name }}</p>{% endif %}
+                <a href="{{ url_for('public.article_detail', article_id=submission.article.id) }}" class="btn btn-sm btn-primary mt-2">View Published Article</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex gap-1 flex-wrap">
+            <a href="{{ url_for('author.dashboard') }}" class="btn btn-outline">← Back to Dashboard</a>
+            {% if submission.status == 'revision_required' %}
+            <a href="{{ url_for('author.upload_revision', paper_id=submission.paper_id) }}" class="btn btn-primary">Upload Revision</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

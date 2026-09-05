@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Top {{ area.name }} Journals for Academic Excellence{% endblock %}
+{% block description %}Publish high-impact, peer-reviewed research in {{ area.name }} with open access, DOI assignment, and rapid peer review on IJMMHRD.{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <ul class="breadcrumb">
+            <li><a href="{{ url_for('public.home') }}">Home</a></li>
+            <li><a href="{{ url_for('public.research_areas') }}">Research Areas</a></li>
+            <li>{{ area.name }} Journal</li>
+        </ul>
+        <h1 style="font-size:2.35rem;line-height:1.25;">Top {{ area.name }} Journals for Academic Excellence</h1>
+        <p style="font-size:1.1rem;color:rgba(255,255,255,0.9);max-width:850px;margin-top:0.5rem;">
+            Open access, peer-reviewed international platform for researchers, academicians, and scholars publishing in {{ area.name }}.
+        </p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="archive-layout-grid">
+            <!-- Main Content Area -->
+            <div class="archive-main-content">
+                
+                <!-- Editorial Overview Cards -->
+                <div class="card mb-4" style="border-left:5px solid var(--gold);">
+                    <div class="card-body" style="padding:2.25rem;">
+                        <h2 style="font-size:1.85rem;color:var(--primary);margin-bottom:1.15rem;">Top {{ area.name }} Journals for Academic Excellence</h2>
+                        <p style="color:var(--gray-700);line-height:1.85;font-size:1.05rem;margin-bottom:1.25rem;">
+                            We at <strong>{{ site_settings.get('journal_abbr', 'IJMMHRD') }}</strong> ({{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}) are committed to empowering scholarly work across all major academic fields, with special emphasis on <strong>{{ area.name }}</strong>. Our platform provides a trusted, high-visibility outlet for researchers, industry professionals, and graduate students to disseminate breakthrough discoveries.
+                        </p>
+                        {% if area.description %}
+                        <p style="color:var(--gray-600);line-height:1.85;font-size:1rem;background:var(--gray-50);padding:1.15rem 1.35rem;border-radius:var(--radius);border:1px solid var(--gray-200);">
+                            <strong>Scope Overview:</strong> {{ area.description }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body" style="padding:2.25rem;">
+                        <h2 style="font-size:1.75rem;color:var(--primary);margin-bottom:1.1rem;">Publish {{ area.name }} Research on a Global Platform</h2>
+                        <p style="color:var(--gray-700);line-height:1.85;font-size:1.05rem;margin-bottom:1.25rem;">
+                            We encourage creative, rigorous, and high-quality submissions spanning both foundational theory and real-world practical applications in <strong>{{ area.name }}</strong>. To preserve the highest standards of scientific integrity, our editorial workflow enforces transparent, rapid double-blind peer review for every manuscript.
+                        </p>
+                        
+                        <div class="form-row mb-2" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1.25rem;">
+                            <div style="background:var(--gray-50);padding:1.25rem;border-radius:var(--radius);border:1px solid var(--gray-200);">
+                                <h4 style="color:var(--primary);font-size:1.05rem;margin-bottom:0.4rem;font-weight:700;">Open Access Dissemination</h4>
+                                <p style="font-size:0.875rem;color:var(--gray-600);margin:0;line-height:1.6;">Articles are published with free worldwide open access, ensuring maximum citation reach and global readership.</p>
+                            </div>
+                            <div style="background:var(--gray-50);padding:1.25rem;border-radius:var(--radius);border:1px solid var(--gray-200);">
+                                <h4 style="color:var(--primary);font-size:1.05rem;margin-bottom:0.4rem;font-weight:700;">Registered Crossref DOI</h4>
+                                <p style="font-size:0.875rem;color:var(--gray-600);margin:0;line-height:1.6;">Every accepted article receives a permanent Digital Object Identifier (DOI) registered with Crossref.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body" style="padding:2.25rem;">
+                        <h2 style="font-size:1.75rem;color:var(--primary);margin-bottom:1.1rem;">Peer Reviewed {{ area.name }} Journals for Maximum Credibility</h2>
+                        <p style="color:var(--gray-700);line-height:1.85;font-size:1.05rem;margin-bottom:1.35rem;">
+                            Publishing with <strong>{{ site_settings.get('journal_abbr', 'IJMMHRD') }}</strong> connects authors to a worldwide network of scholars and academic institutions. We believe that advance in {{ area.name }} is essential for driving technological innovation, solving complex societal challenges, and inspiring new paradigms across interdisciplinary research.
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap" style="align-items:center;">
+                            <a href="{{ url_for('public.submit_paper') }}" class="btn btn-gold btn-lg">Submit {{ area.name }} Manuscript</a>
+                            <a href="{{ url_for('public.guidelines') }}" class="btn btn-outline btn-lg">Author Guidelines</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Published Articles in this Discipline -->
+                <div class="mb-4">
+                    <h2 class="section-title" style="text-align:left;margin-bottom:1.65rem;">Published Articles in {{ area.name }}</h2>
+                    {% if articles %}
+                    <div class="article-grid" style="grid-template-columns:1fr;">
+                        {% for article in articles %}
+                        <div class="card article-card mb-3">
+                            <div class="card-body">
+                                <h3><a href="{{ url_for('public.article_detail', article_id=article.id) }}">{{ article.title }}</a></h3>
+                                <div class="article-authors">Authors: {{ article.authors|map(attribute='full_name')|join(', ') }}</div>
+                                <div class="article-meta">
+                                    {% if article.issue %}
+                                    <span>Vol. {{ article.issue.volume.volume_number }}, Issue {{ article.issue.issue_number }} ({{ article.issue.volume.year }})</span>
+                                    {% endif %}
+                                    {% if article.pages_display %}<span>pp. {{ article.pages_display }}</span>{% endif %}
+                                    {% if article.doi %}<span>DOI: <a href="{{ article.doi_url }}" class="doi-link" target="_blank">{{ article.doi }}</a></span>{% endif %}
+                                </div>
+                                <div class="article-actions">
+                                    <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="btn btn-sm btn-outline">View Details & Abstract</a>
+                                    {% if article.pdf_path %}
+                                    <a href="{{ url_for('public.uploaded_file', filename=article.pdf_path) }}" class="btn btn-sm btn-primary" target="_blank">Download Full PDF</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="card text-center" style="padding:3rem 1.5rem;color:var(--gray-500);">
+                        <p>Articles published under {{ area.name }} will appear here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="archive-sidebar-wrapper">
+                
+                <!-- Browse All Discipline Journals Widget -->
+                <div class="card mb-4" style="border-top:4px solid var(--primary);">
+                    <div class="card-header" style="background:var(--primary);color:var(--white);">
+                        <h3 style="font-size:1.1rem;color:var(--white);margin:0;font-family:var(--font-body);font-weight:700;">Discipline Journals</h3>
+                    </div>
+                    <div class="card-body" style="padding:0.5rem 0;">
+                        <ul class="archive-issue-list">
+                            {% for nav_item in all_areas %}
+                            <li>
+                                <a href="{{ url_for('public.discipline_detail', slug=nav_item.slug) }}" style="{% if nav_item.id == area.id %}font-weight:700;color:var(--primary);background:var(--gray-100);{% endif %}">
+                                    <span style="font-weight:bold;color:var(--primary);margin-right:0.35rem;">–</span>
+                                    {{ nav_item.name }} Journal
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="archive-sidebar-footer">
+                        <a href="{{ url_for('public.research_areas') }}">VIEW ALL RESEARCH AREAS →</a>
+                    </div>
+                </div>
+
+                <!-- Archive Sidebar Component -->
+                {% include "components/archive_sidebar.html" %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

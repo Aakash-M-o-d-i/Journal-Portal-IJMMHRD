@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In | IJMMHRD</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body style="background:linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;">
+    <div style="width:100%;max-width:420px;">
+        <div class="card" style="box-shadow:var(--shadow-lg);border-top:4px solid var(--gold);">
+            <div class="card-body" style="padding:2.5rem 2rem;">
+                <div class="text-center mb-4">
+                    <div style="width:54px;height:54px;background:var(--primary);color:var(--gold-light);font-family:var(--font-heading);font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-lg);margin:0 auto 1rem;border:2px solid var(--gold);">
+                        IJ
+                    </div>
+                    <h2 style="font-size:1.5rem;color:var(--primary);margin-bottom:0.25rem;">IJMMHRD Editorial Panel</h2>
+                    <p style="font-size:0.875rem;color:var(--gray-500);">Sign in with administrator credentials</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="post" data-validate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>Admin Email *</label>
+                        <input type="email" name="email" class="form-control" placeholder="admin@ijmmhrd.com" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-gold btn-lg" style="width:100%;margin-top:0.5rem;">Sign In to Editorial Panel</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('public.home') }}" style="color:rgba(255,255,255,0.7);font-size:0.875rem;">← Back to IJMMHRD Public Website</a>
+        </div>
+    </div>
+</body>
+</html>

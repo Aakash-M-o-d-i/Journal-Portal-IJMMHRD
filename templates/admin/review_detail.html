@@ -1,0 +1,54 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Review{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Review — {{ assignment.reviewer.full_name }}</h1>
+</div>
+
+<div class="card" style="max-width:700px;">
+    <div class="card-header">
+        Submission: {{ assignment.submission.paper_id }} — {{ assignment.submission.title|truncate(60) }}
+    </div>
+    <div class="card-body">
+        {% if assignment.review %}
+        <!-- View existing review -->
+        <p><strong>Recommendation:</strong> <span class="badge badge-{{ assignment.review.recommendation }}">{{ assignment.review.recommendation.replace('_', ' ').title() }}</span></p>
+        {% if assignment.review.rating %}<p><strong>Rating:</strong> {{ assignment.review.rating }}/10</p>{% endif %}
+        {% if assignment.review.comments_to_author %}<p><strong>Comments to Author:</strong><br>{{ assignment.review.comments_to_author }}</p>{% endif %}
+        {% if assignment.review.confidential_comments %}<p><strong>Confidential Comments (Editor Only):</strong><br>{{ assignment.review.confidential_comments }}</p>{% endif %}
+        <p class="text-muted text-small">Reviewed: {{ assignment.review.reviewed_at.strftime('%B %d, %Y') }}</p>
+        {% else %}
+        <!-- Record review -->
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label>Recommendation *</label>
+                <select name="recommendation" class="form-control" required>
+                    <option value="accept">Accept</option>
+                    <option value="minor_revision">Minor Revision</option>
+                    <option value="major_revision">Major Revision</option>
+                    <option value="reject">Reject</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Rating (1-10)</label>
+                <input type="number" name="rating" class="form-control" min="1" max="10">
+            </div>
+            <div class="form-group">
+                <label>Comments to Author</label>
+                <textarea name="comments_to_author" class="form-control" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Confidential Comments (Editor Only)</label>
+                <textarea name="confidential_comments" class="form-control" rows="3"></textarea>
+                <div class="form-text">These comments will NOT be visible to the author.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<a href="{{ url_for('admin.submission_detail', sub_id=assignment.submission_id) }}" class="btn btn-outline mt-3">← Back to Submission</a>
+{% endblock %}

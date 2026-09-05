@@ -1,0 +1,78 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}DOI Management{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>DOI Management</h1>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-between align-center">
+        <span>Article Digital Object Identifiers (DOIs)</span>
+    </div>
+    <div class="table-responsive" style="border:none;box-shadow:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Article ID</th>
+                    <th>Title</th>
+                    <th>DOI</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for art in articles %}
+            <tr>
+                <td><strong>{{ art.article_id or '-' }}</strong></td>
+                <td>{{ art.title|truncate(45) }}</td>
+                <td>
+                    {% if art.doi %}
+                    <span style="font-family:monospace;font-size:0.875rem;color:var(--primary);font-weight:600;">{{ art.doi }}</span>
+                    <button class="copy-btn" data-copy="{{ art.doi }}" style="margin-left:0.35rem;">Copy</button>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if art.doi %}
+                    <span class="badge badge-{{ art.doi_status }}">{{ art.doi_status }}</span>
+                    {% else %}
+                    <span class="text-muted text-small">Not Generated</span>
+                    {% endif %}
+                </td>
+                <td style="text-align:right;">
+                    <div class="d-flex gap-1 justify-between align-center" style="justify-content:flex-end;flex-wrap:wrap;">
+                        {% if not art.doi or art.doi_status == 'pending' %}
+                        <form method="post" action="{{ url_for('admin.generate_doi', article_id=art.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-primary">Generate Random DOI</button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{{ url_for('admin.generate_doi', article_id=art.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="force" value="true">
+                            <button type="submit" class="btn btn-sm btn-outline" title="Generate a new random DOI">Regenerate</button>
+                        </form>
+                        {% if art.doi_status == 'generated' %}
+                        <form method="post" action="{{ url_for('admin.register_doi', article_id=art.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-gold" data-confirm="Mark DOI as officially registered?">Mark Registered</button>
+                        </form>
+                        {% elif art.doi_status == 'registered' %}
+                        <span class="badge badge-published">Registered</span>
+                        {% endif %}
+                        <button class="copy-btn" data-copy="{{ art.doi_url }}">Copy Link</button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not articles %}
+            <tr><td colspan="5" class="text-center text-muted" style="padding:2.5rem;">No published articles available for DOI management yet.</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

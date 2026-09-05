@@ -1,0 +1,42 @@
+<!-- Archive Sidebar Component -->
+<div class="archive-sidebar-card">
+    <div class="archive-sidebar-header">
+        <h3>Journal Archives</h3>
+    </div>
+    
+    <div class="archive-sidebar-body">
+        {% if sidebar_volumes %}
+            {% for vol in sidebar_volumes %}
+            <details class="archive-year-group" {% if loop.first %}open{% endif %}>
+                <summary class="archive-year-title">
+                    <span class="year-toggle-icon"></span>
+                    <span>Volume {{ vol.volume_number }} ({{ vol.year }})</span>
+                </summary>
+                <ul class="archive-issue-list">
+                    {% if vol.issues %}
+                        {% for issue in vol.issues %}
+                        <li>
+                            <a href="{{ url_for('public.archive_issue', volume_id=vol.id, issue_id=issue.id) }}">
+                                <span style="font-weight:bold;color:var(--primary);">–</span>
+                                Issue {{ issue.issue_number }}{% if issue.publication_date %} ({{ issue.publication_date.strftime('%b %Y') }}){% else %}, {{ vol.year }}{% endif %}
+                                {% if issue.is_current %}
+                                <span class="badge badge-published" style="font-size:0.7rem;padding:0.15rem 0.45rem;margin-left:auto;">Current</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li style="padding:0.6rem 1.35rem;font-size:0.875rem;color:var(--gray-400);">No issues published yet.</li>
+                    {% endif %}
+                </ul>
+            </details>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-small text-center" style="padding:1.5rem 1rem;">No published volumes available.</p>
+        {% endif %}
+    </div>
+
+    <div class="archive-sidebar-footer">
+        <a href="{{ url_for('public.archives') }}">VIEW ALL VOLUMES & ISSUES →</a>
+    </div>
+</div>

@@ -1,0 +1,147 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Direct Add Article{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Direct Add Article</h1>
+    <a href="{{ url_for('admin.articles') }}" class="btn btn-outline btn-sm">← Back to Articles List</a>
+</div>
+
+<div class="card" style="max-width:800px;">
+    <div class="card-header">
+        <span>Article Details & Authors</span>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" data-validate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <h3 style="font-size:1.15rem;margin-bottom:1rem;color:var(--primary);">1. Manuscript Details</h3>
+
+            <div class="form-group">
+                <label>Article Title *</label>
+                <input type="text" name="title" class="form-control" placeholder="Enter complete article title" required>
+            </div>
+
+            <div class="form-group">
+                <label>Abstract</label>
+                <textarea name="abstract" class="form-control" rows="5" placeholder="Enter manuscript abstract..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Keywords (comma separated)</label>
+                <input type="text" name="keywords" class="form-control" placeholder="e.g., Artificial Intelligence, Neural Networks, Deep Learning">
+            </div>
+
+            <div class="form-group">
+                <label>Target Volume & Issue</label>
+                <select name="issue_id" class="form-control">
+                    <option value="">Select Volume / Issue (Optional)...</option>
+                    {% for issue in issues %}
+                    <option value="{{ issue.id }}">{{ issue.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Page</label>
+                    <input type="number" name="page_start" class="form-control" placeholder="e.g. 1">
+                </div>
+                <div class="form-group">
+                    <label>End Page</label>
+                    <input type="number" name="page_end" class="form-control" placeholder="e.g. 12">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Upload Full PDF Manuscript</label>
+                <input type="file" name="pdf_file" class="form-control" accept=".pdf">
+            </div>
+
+            <div class="form-group" style="margin-top:1rem;">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:600;">
+                    <input type="checkbox" name="auto_publish" checked style="width:18px;height:18px;">
+                    Publish Article Immediately
+                </label>
+                <div class="form-text">If checked, article will be marked as published on creation. Uncheck to save as draft.</div>
+            </div>
+
+            <hr style="margin:2rem 0;border-color:var(--gray-200);">
+
+            <div class="d-flex justify-between align-center mb-3">
+                <h3 style="font-size:1.15rem;margin:0;color:var(--primary);">2. Authors & Affiliations</h3>
+                <button type="button" id="add-author-btn" class="btn btn-sm btn-outline">+ Add Co-Author</button>
+            </div>
+
+            <div id="authors-container">
+                <!-- Author 1 -->
+                <div class="co-author-fields mb-3" style="background:var(--gray-50);padding:1.25rem;border-radius:var(--radius);border:1px solid var(--gray-200);">
+                    <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.75rem;">Author 1 (Primary / Corresponding)</div>
+                    <div class="form-row mb-2">
+                        <div class="form-group mb-0">
+                            <label>Full Name *</label>
+                            <input type="text" name="author_name[]" class="form-control" placeholder="Dr. Full Name" required>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Email Address</label>
+                            <input type="email" name="author_email[]" class="form-control" placeholder="author@institution.edu">
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>University / Institution Affiliation</label>
+                        <input type="text" name="author_affiliation[]" class="form-control" placeholder="Department of Computer Science, University of Example">
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:2rem;">
+                <button type="submit" class="btn btn-gold btn-lg" style="width:100%;">Create Article & Issue DOI</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('authors-container');
+    const addBtn = document.getElementById('add-author-btn');
+    let authorCount = 1;
+
+    if (addBtn && container) {
+        addBtn.addEventListener('click', function() {
+            authorCount++;
+            const div = document.createElement('div');
+            div.className = 'co-author-fields mb-3';
+            div.style.cssText = 'background:var(--gray-50);padding:1.25rem;border-radius:var(--radius);border:1px solid var(--gray-200);position:relative;';
+            div.innerHTML = `
+                <div class="d-flex justify-between align-center mb-2">
+                    <div style="font-size:0.85rem;font-weight:700;color:var(--primary);">Author ${authorCount}</div>
+                    <button type="button" class="btn btn-sm btn-danger remove-author-btn" style="padding:0.2rem 0.5rem;font-size:0.75rem;">Remove</button>
+                </div>
+                <div class="form-row mb-2">
+                    <div class="form-group mb-0">
+                        <label>Full Name *</label>
+                        <input type="text" name="author_name[]" class="form-control" placeholder="Co-Author Name" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label>Email Address</label>
+                        <input type="email" name="author_email[]" class="form-control" placeholder="email@institution.edu">
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <label>University / Institution Affiliation</label>
+                    <input type="text" name="author_affiliation[]" class="form-control" placeholder="Institution Affiliation">
+                </div>
+            `;
+            container.appendChild(div);
+
+            div.querySelector('.remove-author-btn').addEventListener('click', function() {
+                div.remove();
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

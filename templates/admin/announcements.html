@@ -1,0 +1,140 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Announcements Management{% endblock %}
+
+{% block admin_content %}
+<div class="cms-centered-container" style="max-width:960px; margin: 0 auto;">
+    <div class="admin-header d-flex justify-between align-center mb-4">
+        <div>
+            <h1 style="font-size:1.75rem; color:var(--primary); font-weight:700; margin-bottom:0.25rem;">📢 Journal Announcements</h1>
+            <p class="text-muted" style="font-size:0.9rem; margin:0;">Create, edit, and publish calls for papers, news, and official journal updates.</p>
+        </div>
+        {% if editing_announcement %}
+        <a href="{{ url_for('admin.announcements') }}" class="btn btn-outline btn-sm">+ Add New Announcement</a>
+        {% endif %}
+    </div>
+
+    <!-- Announcement Form Card -->
+    <div class="card mb-4" style="box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: var(--radius-lg);">
+        <div class="card-header d-flex justify-between align-center" style="background:var(--gray-50); border-bottom:1px solid var(--gray-200); padding:1rem 1.25rem;">
+            <strong style="font-size:1.05rem; color:var(--primary-dark);">
+                {% if editing_announcement %}✏️ Edit Announcement #{{ editing_announcement.id }}{% else %}➕ Create New Announcement{% endif %}
+            </strong>
+            {% if editing_announcement %}
+            <span class="badge badge-published">Editing Mode</span>
+            {% endif %}
+        </div>
+        <div class="card-body" style="padding:1.5rem;">
+            <form method="post" action="{{ url_for('admin.edit_announcement', ann_id=editing_announcement.id) if editing_announcement else url_for('admin.add_announcement') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group mb-3">
+                    <label style="font-weight:600; color:var(--gray-800); margin-bottom:0.35rem; display:block;">Announcement Title *</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g., Call for Papers: Special Issue on AI in Healthcare 2026" value="{{ editing_announcement.title if editing_announcement else '' }}" required style="font-size:1rem; padding:0.65rem 0.85rem;">
+                </div>
+
+                <div class="row mb-3" style="display:flex; gap:1.25rem; align-items:flex-end;">
+                    <div style="flex:1;">
+                        <label style="font-weight:600; color:var(--gray-800); margin-bottom:0.35rem; display:block;">Publish Date</label>
+                        <input type="date" name="publish_date" class="form-control" value="{{ editing_announcement.publish_date.strftime('%Y-%m-%d') if editing_announcement and editing_announcement.publish_date else '' }}">
+                    </div>
+                    <div style="flex:1; padding-bottom:0.5rem;">
+                        <label style="font-weight:600; color:var(--gray-800); cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                            <input type="checkbox" name="is_published" style="width:18px; height:18px;" {{ 'checked' if (editing_announcement and editing_announcement.is_published) or not editing_announcement }}>
+                            <span>Publish Immediately on Journal Homepage</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label style="font-weight:600; color:var(--primary); margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
+                        <span>📝 Announcement Content & Details</span>
+                        <span class="badge badge-published" style="font-size:0.7rem; font-weight:600;">Word Visual Editor</span>
+                    </label>
+                    <textarea name="content" class="form-control" rows="8" placeholder="Enter announcement body, detailed guidelines, deadlines, or contact details...">{{ editing_announcement.content if editing_announcement else '' }}</textarea>
+                    <div class="form-text mt-1" style="font-size:0.825rem; color:var(--gray-500);">Format text with headings, bullet points, callout boxes, links, or tables using the Word editor toolbar above.</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.5rem; font-weight:600;">
+                        {% if editing_announcement %}Save Changes{% else %}Post Announcement{% endif %}
+                    </button>
+                    {% if editing_announcement %}
+                    <a href="{{ url_for('admin.announcements') }}" class="btn btn-outline">Cancel Edit</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- All Announcements List Table Card -->
+    <div class="card" style="box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: var(--radius-lg);">
+        <div class="card-header d-flex justify-between align-center" style="background:var(--gray-50); border-bottom:1px solid var(--gray-200); padding:1rem 1.25rem;">
+            <strong style="font-size:1.05rem; color:var(--primary-dark);">📋 All Journal Announcements ({{ announcements|length }})</strong>
+        </div>
+        <div class="table-responsive" style="border:none; box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40%;">Title</th>
+                        <th style="width:20%;">Publish Date</th>
+                        <th style="width:15%;">Status</th>
+                        <th style="width:25%; text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for a in announcements %}
+                <tr style="{{ 'background-color: rgba(26,75,140,0.02);' if editing_announcement and editing_announcement.id == a.id }}">
+                    <td>
+                        <strong style="color:var(--primary); font-size:0.95rem;">{{ a.title }}</strong>
+                        {% if a.content %}
+                        <div style="font-size:0.825rem; color:var(--gray-500); margin-top:0.2rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:350px;">
+                            {{ a.content|striptags }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if a.publish_date %}
+                        <span style="font-size:0.875rem; color:var(--gray-700);">📅 {{ a.publish_date.strftime('%d %b %Y') }}</span>
+                        {% else %}
+                        <span class="text-muted" style="font-size:0.85rem;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'published' if a.is_published else 'draft' }}">
+                            {{ 'Published' if a.is_published else 'Draft' }}
+                        </span>
+                    </td>
+                    <td style="text-align:right;">
+                        <div class="d-flex gap-1 justify-end align-center">
+                            <a href="{{ url_for('admin.edit_announcement', ann_id=a.id) }}" class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.8rem;">✏️ Edit</a>
+                            
+                            <form method="post" action="{{ url_for('admin.toggle_announcement', ann_id=a.id) }}" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.8rem;">
+                                    {{ 'Unpublish' if a.is_published else 'Publish' }}
+                                </button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('admin.delete_announcement', ann_id=a.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm" style="background:#ef4444; color:#fff; border:none; padding:0.25rem 0.6rem; font-size:0.8rem; border-radius:4px; cursor:pointer;">🗑️</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not announcements %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted" style="padding:3rem 1rem;">
+                        <div style="font-size:1.5rem; margin-bottom:0.5rem;">📢</div>
+                        <div style="font-weight:600;">No announcements posted yet.</div>
+                        <div style="font-size:0.85rem; color:var(--gray-500); margin-top:0.25rem;">Use the form above to add your first journal announcement or call for papers.</div>
+                    </td>
+                </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

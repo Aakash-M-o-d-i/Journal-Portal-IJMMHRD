@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Search Research{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Search Published Research</h1>
+        <p>Find peer-reviewed articles across all disciplines by title, author, keyword, or DOI.</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="search-box" style="max-width:740px;margin:0 auto 2.75rem;">
+            <form action="{{ url_for('public.search') }}" method="get">
+                <div class="search-input-group" style="border:1px solid var(--gray-300);">
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search by title, author, keywords, paper ID, or DOI..." aria-label="Search">
+                    <button type="submit">Search Articles</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="archive-layout-grid">
+            <div class="archive-main-content">
+                {% if query %}
+                <p class="text-muted mb-3" style="font-size:1.05rem;">
+                    Found <strong>{{ results|length }}</strong> result{{ 's' if results|length != 1 else '' }} matching "<strong>{{ query }}</strong>":
+                </p>
+
+                {% if results %}
+                {% for article in results %}
+                <div class="card article-card mb-3">
+                    <div class="card-body">
+                        <h3><a href="{{ url_for('public.article_detail', article_id=article.id) }}">{{ article.title }}</a></h3>
+                        <div class="article-authors">Authors: {{ article.authors|map(attribute='full_name')|join(', ') }}</div>
+                        <div class="article-meta">
+                            {% if article.issue %}
+                            <span>Vol. {{ article.issue.volume.volume_number }}, Issue {{ article.issue.issue_number }} ({{ article.issue.volume.year }})</span>
+                            {% endif %}
+                            {% if article.pages_display %}<span>pp. {{ article.pages_display }}</span>{% endif %}
+                            {% if article.doi %}<span>DOI: <a href="{{ article.doi_url }}" class="doi-link" target="_blank">{{ article.doi }}</a></span>{% endif %}
+                        </div>
+                        <div class="article-actions">
+                            <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="btn btn-sm btn-outline">View Details & Abstract</a>
+                            {% if article.pdf_path %}
+                            <a href="{{ url_for('public.uploaded_file', filename=article.pdf_path) }}" class="btn btn-sm btn-primary" target="_blank">Download Full PDF</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="card text-center" style="padding:3.5rem 1.75rem;color:var(--gray-500);">
+                    <p>No published articles matched your search query.</p>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="card text-center" style="padding:3.5rem 1.75rem;color:var(--gray-500);">
+                    <p>Type keywords, paper title, or author name above and click search.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Sidebar Widget -->
+            <div class="archive-sidebar-wrapper">
+                {% include "components/archive_sidebar.html" %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

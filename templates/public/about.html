@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}About Journal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>About IJMMHRD</h1>
+        <p>Learn about our mission, open-access policy, and editorial vision.</p>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container" style="max-width:900px;">
+        {% if page %}
+        <div class="card mb-4" style="padding:2.25rem;">
+            <h2 style="font-size:1.6rem;color:var(--primary);margin-bottom:1rem;">{{ page.title }}</h2>
+            <div class="cms-content" style="color:var(--gray-700);line-height:1.8;">
+                {{ page.content|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if scope %}
+        <div class="card" style="padding:2.25rem;border-left:4px solid var(--gold);">
+            <h2 style="font-size:1.6rem;color:var(--primary);margin-bottom:1rem;">{{ scope.title }}</h2>
+            <div class="cms-content" style="color:var(--gray-700);line-height:1.8;">
+                {{ scope.content|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

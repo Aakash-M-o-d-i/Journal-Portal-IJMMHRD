@@ -1,0 +1,143 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ submission.paper_id }}{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>{{ submission.paper_id }} <span class="badge badge-{{ submission.status }}">{{ submission.status_display }}</span></h1>
+    <div class="d-flex gap-1">
+        {% if submission.article %}
+        <a href="{{ url_for('admin.article_edit', article_id=submission.article.id) }}" class="btn btn-gold btn-sm">View/Edit Article</a>
+        {% elif submission.status in ['accepted', 'published'] %}
+        <a href="{{ url_for('admin.create_article', sub_id=submission.id) }}" class="btn btn-gold btn-sm">Create Article</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Details Grid -->
+<div class="admin-grid-2col">
+    <div>
+        <div class="card mb-3">
+            <div class="card-header">Manuscript Details</div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Title:</strong> {{ submission.title }}</p>
+                {% if submission.abstract %}<p class="mb-2"><strong>Abstract:</strong> {{ submission.abstract }}</p>{% endif %}
+                {% if submission.keywords %}<p class="mb-2"><strong>Keywords:</strong> {{ submission.keywords }}</p>{% endif %}
+                {% if submission.research_area %}<p class="mb-2"><strong>Research Area:</strong> {{ submission.research_area }}</p>{% endif %}
+                <p class="mb-2"><strong>Submitted:</strong> {{ submission.submitted_at.strftime('%B %d, %Y at %H:%M') }}</p>
+                <p class="mb-0"><strong>Author Email:</strong> {{ submission.submitted_by_email }}</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Authors List</div>
+            <div class="card-body">
+                {% for a in submission.authors %}
+                <div class="mb-2" style="border-bottom:1px solid var(--gray-100);padding-bottom:0.5rem;">
+                    <div>{{ a.author_order }}. <strong>{{ a.full_name }}</strong>
+                        {% if a.is_corresponding %}<span class="badge badge-published" style="font-size:0.65rem;">Corresponding</span>{% endif %}
+                    </div>
+                    {% if a.email %}<div class="text-muted text-small">{{ a.email }}</div>{% endif %}
+                    {% if a.affiliation %}<div class="text-muted text-small">{{ a.affiliation }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Submitted Files</div>
+            <div class="card-body">
+                {% for f in submission.files %}
+                <div class="d-flex justify-between align-center mb-2" style="padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
+                    <span><strong>{{ f.file_name }}</strong> <span class="badge badge-{{ 'published' if f.file_type == 'manuscript' else 'submitted' }}">{{ f.file_type }} v{{ f.version }}</span></span>
+                    <span class="text-muted text-small">{{ f.uploaded_at.strftime('%d %b %Y') }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <!-- Status Change -->
+        <div class="card mb-3">
+            <div class="card-header">Change Submission Status</div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.update_status', sub_id=submission.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>New Status</label>
+                        <select name="status" class="form-control">
+                            {% for next_status in submission.TRANSITIONS.get(submission.status, []) %}
+                            <option value="{{ next_status }}">{{ next_status.replace('_', ' ').title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Editor Notes</label>
+                        <textarea name="editor_notes" class="form-control" rows="3" placeholder="Notes for review process or decision justification...">{{ submission.editor_notes or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" data-confirm="Change submission status?">Update Status</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Assign Reviewer -->
+        <div class="card mb-3">
+            <div class="card-header">Assign Peer Reviewer</div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('admin.assign_reviewer', sub_id=submission.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label>Select Reviewer</label>
+                        <select name="reviewer_id" class="form-control" required>
+                            <option value="">Select reviewer...</option>
+                            {% for r in reviewers %}
+                            <option value="{{ r.id }}">{{ r.full_name }} ({{ r.specialization or 'General' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Review Due Date</label>
+                        <input type="date" name="due_date" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Assign Reviewer</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Current Assignments -->
+        {% if submission.assignments %}
+        <div class="card mb-3">
+            <div class="card-header">Review Assignments</div>
+            <div class="table-responsive" style="border:none;box-shadow:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reviewer</th>
+                            <th>Status</th>
+                            <th>Due</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for a in submission.assignments %}
+                    <tr>
+                        <td><strong>{{ a.reviewer.full_name }}</strong></td>
+                        <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+                        <td>{{ a.due_date.strftime('%d %b %Y') if a.due_date else '-' }}</td>
+                        <td>
+                            {% if a.status == 'pending' %}
+                            <a href="{{ url_for('admin.review_detail', assignment_id=a.id) }}" class="btn btn-sm btn-outline">Record Review</a>
+                            {% elif a.review %}
+                            <a href="{{ url_for('admin.review_detail', assignment_id=a.id) }}" class="btn btn-sm btn-outline">View Review</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

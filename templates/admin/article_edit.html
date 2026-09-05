@@ -1,0 +1,76 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Edit Article{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Edit Article — {{ article.article_id }}</h1>
+    <div class="d-flex gap-1">
+        {% if not article.published_at %}
+        <form method="post" action="{{ url_for('admin.publish_article', article_id=article.id) }}" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-primary btn-sm" data-confirm="Publish this article?">Publish Article</button>
+        </form>
+        {% else %}
+        <span class="badge badge-published" style="font-size:0.875rem;padding:0.5rem 1rem;">Published {{ article.published_at.strftime('%d %b %Y') }}</span>
+        {% endif %}
+        <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="btn btn-sm btn-outline" target="_blank">View Public Page</a>
+    </div>
+</div>
+
+<div class="card" style="max-width:750px;">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" data-validate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group"><label>Article Title *</label><input type="text" name="title" class="form-control" value="{{ article.title }}" required></div>
+            <div class="form-group"><label>Abstract</label><textarea name="abstract" class="form-control" rows="4">{{ article.abstract or '' }}</textarea></div>
+            <div class="form-group"><label>Keywords (comma separated)</label><input type="text" name="keywords" class="form-control" value="{{ article.keywords or '' }}"></div>
+            <div class="form-group"><label>Volume & Issue</label>
+                <select name="issue_id" class="form-control">
+                    <option value="">Select issue...</option>
+                    {% for issue in issues %}
+                    <option value="{{ issue.id }}" {{ 'selected' if article.issue_id == issue.id }}>{{ issue.display_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Start Page</label><input type="number" name="page_start" class="form-control" value="{{ article.page_start or '' }}"></div>
+                <div class="form-group"><label>End Page</label><input type="number" name="page_end" class="form-control" value="{{ article.page_end or '' }}"></div>
+            </div>
+            <div class="form-group"><label>Upload / Replace PDF File</label><input type="file" name="pdf_file" class="form-control" accept=".pdf"></div>
+            {% if article.pdf_path %}<p class="text-small text-muted mb-3">Current PDF file: {{ article.pdf_path }}</p>{% endif %}
+            <button type="submit" class="btn btn-primary">Save Article Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- DOI Information Card with Random Generation -->
+<div class="card mt-3" style="max-width:750px;">
+    <div class="card-header d-flex justify-between align-center">
+        <span>DOI Information</span>
+        <form method="post" action="{{ url_for('admin.generate_doi', article_id=article.id) }}" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="force" value="true">
+            <button type="submit" class="btn btn-sm btn-gold">{% if article.doi %}Generate New Random DOI{% else %}Generate Random DOI{% endif %}</button>
+        </form>
+    </div>
+    <div class="card-body">
+        {% if article.doi %}
+        <p class="mb-2"><strong>DOI Identifier:</strong> <span style="font-family:monospace;font-size:0.95rem;color:var(--primary);font-weight:700;">{{ article.doi }}</span> <button class="copy-btn" data-copy="{{ article.doi }}">Copy DOI</button></p>
+        <p class="mb-2"><strong>DOI Direct Link:</strong> <a href="{{ article.doi_url }}" target="_blank" style="word-break:break-all;">{{ article.doi_url }}</a> <button class="copy-btn" data-copy="{{ article.doi_url }}">Copy URL</button></p>
+        <p class="mb-0"><strong>DOI Status:</strong> <span class="badge badge-{{ article.doi_status }}">{{ article.doi_status }}</span></p>
+        {% else %}
+        <p class="text-muted mb-0">No DOI generated yet. Click <strong>Generate Random DOI</strong> above to issue a unique DOI for this article.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Authors Card -->
+<div class="card mt-3" style="max-width:750px;">
+    <div class="card-header">Authors & Affiliations</div>
+    <div class="card-body">
+        {% for a in article.authors %}
+        <p class="mb-1">{{ a.author_order }}. <strong>{{ a.full_name }}</strong>{% if a.affiliation %} — {{ a.affiliation }}{% endif %}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

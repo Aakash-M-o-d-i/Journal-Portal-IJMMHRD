@@ -1,0 +1,53 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Articles{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Published & Draft Articles</h1>
+    <a href="{{ url_for('admin.article_direct_create') }}" class="btn btn-gold btn-sm">+ Direct Add Article</a>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-between align-center">
+        <span>Articles Overview</span>
+        <a href="{{ url_for('admin.article_direct_create') }}" class="btn btn-primary btn-sm">+ Direct Add Article</a>
+    </div>
+    <div class="table-responsive" style="border:none;box-shadow:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Article ID</th>
+                    <th>Title</th>
+                    <th>Issue</th>
+                    <th>DOI Status</th>
+                    <th>Publication Date</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for art in articles %}
+            <tr>
+                <td><strong>{{ art.article_id or '-' }}</strong></td>
+                <td>{{ art.title|truncate(50) }}</td>
+                <td>{% if art.issue %}{{ art.issue.display_name }}{% else %}-{% endif %}</td>
+                <td>
+                    {% if art.doi %}
+                    <span class="badge badge-{{ art.doi_status }}">{{ art.doi_status }}</span>
+                    {% else %}
+                    <span class="text-muted text-small">-</span>
+                    {% endif %}
+                </td>
+                <td>{{ art.published_at.strftime('%d %b %Y') if art.published_at else 'Not published' }}</td>
+                <td style="text-align:right;">
+                    <a href="{{ url_for('admin.article_edit', article_id=art.id) }}" class="btn btn-sm btn-outline">Edit Article</a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not articles %}
+            <tr><td colspan="6" class="text-center text-muted" style="padding:2.5rem;">No articles created yet. Click "+ Direct Add Article" above to create one.</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

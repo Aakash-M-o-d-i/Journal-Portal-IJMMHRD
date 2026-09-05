@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span>International Peer-Reviewed Journal</span>
+            </div>
+            <h1>{{ settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}</h1>
+            <p class="subtitle">Publishing groundbreaking, high-impact interdisciplinary research across health, technology, science, and development. Dedicated to open-access scholarly excellence and rapid double-blind peer review.</p>
+            <div class="hero-actions">
+                <a href="{{ url_for('public.submit_paper') }}" class="btn btn-gold btn-lg">Submit Manuscript</a>
+                <a href="{{ url_for('public.track_paper') }}" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,0.45);">Track Submission Status</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="stats-bar">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_articles }}</div>
+                <div class="stat-label">Published Articles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_areas }}</div>
+                <div class="stat-label">Research Disciplines</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_volumes }}</div>
+                <div class="stat-label">Published Volumes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ settings.get('publication_frequency', 'Monthly') }}</div>
+                <div class="stat-label">Frequency</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Introduction -->
+{% if intro %}
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Journal Overview</h2>
+        <div class="cms-content" style="max-width:860px;margin:0 auto;text-align:center;color:var(--gray-700);font-size:1.1rem;line-height:1.85;">
+            {{ intro.content|safe }}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Search Section -->
+<section class="search-section">
+    <div class="container">
+        <div class="search-box">
+            <h2>Search Published Research</h2>
+            <form action="{{ url_for('public.search') }}" method="get">
+                <div class="search-input-group">
+                    <input type="text" name="q" placeholder="Search by title, author name, keywords, Paper ID, or DOI..." aria-label="Search articles">
+                    <button type="submit">Search Articles</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Publications & Archive Sidebar -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="archive-layout-grid">
+            <div class="archive-main-content">
+                <h2 class="section-title" style="text-align:left;margin-bottom:1.85rem;">Latest Publications</h2>
+                {% if latest_articles %}
+                <div class="article-grid" style="grid-template-columns:1fr;">
+                    {% for article in latest_articles %}
+                    <div class="card article-card mb-3">
+                        <div class="card-body">
+                            <h3><a href="{{ url_for('public.article_detail', article_id=article.id) }}">{{ article.title }}</a></h3>
+                            <div class="article-authors">
+                                Authors: {{ article.authors|map(attribute='full_name')|join(', ') }}
+                            </div>
+                            <div class="article-meta">
+                                {% if article.issue %}
+                                <span>Vol. {{ article.issue.volume.volume_number }}, Issue {{ article.issue.issue_number }} ({{ article.issue.volume.year }})</span>
+                                {% endif %}
+                                {% if article.published_at %}
+                                <span>Published: {{ article.published_at.strftime('%B %Y') }}</span>
+                                {% endif %}
+                                {% if article.pages_display %}
+                                <span>pp. {{ article.pages_display }}</span>
+                                {% endif %}
+                                {% if article.doi %}
+                                <span>DOI: <a href="{{ article.doi_url }}" class="doi-link" target="_blank">{{ article.doi }}</a></span>
+                                {% endif %}
+                            </div>
+                            <div class="article-actions">
+                                <a href="{{ url_for('public.article_detail', article_id=article.id) }}" class="btn btn-sm btn-outline">View Details & Abstract</a>
+                                {% if article.pdf_path %}
+                                <a href="{{ url_for('public.uploaded_file', filename=article.pdf_path) }}" class="btn btn-sm btn-primary" target="_blank">Download Full PDF</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="card text-center" style="padding:3.5rem 1.75rem;color:var(--gray-500);">
+                    <p>No published articles currently listed. Articles will appear here once published.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Archive Sidebar Widget -->
+            <div class="archive-sidebar-wrapper">
+                {% include "components/archive_sidebar.html" %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Research Areas -->
+{% if areas %}
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Key Research Disciplines</h2>
+        <div class="areas-grid">
+            {% for area in areas[:12] %}
+            <a href="{{ url_for('public.discipline_detail', slug=area.slug) }}" class="area-item" style="text-decoration:none;">{{ area.name }}</a>
+            {% endfor %}
+
+        </div>
+        {% if areas|length > 12 %}
+        <div class="text-center mt-3">
+            <a href="{{ url_for('public.research_areas') }}" class="btn btn-sm btn-outline">View All {{ areas|length }} Research Areas →</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- How to Publish -->
+<section class="section section-alt">
+    <div class="container">
+        <h2 class="section-title">Publication Workflow</h2>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-number">1</div>
+                <h4>Manuscript Submission</h4>
+                <p>Submit your original manuscript and co-author details through our simple submission form.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <h4>Double-Blind Peer Review</h4>
+                <p>Expert reviewers evaluate your paper for originality, methodology, and scholarly significance.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <h4>Revision & Acceptance</h4>
+                <p>Incorporate editorial feedback and upload your revised manuscript for final approval.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <h4>DOI Assignment & Publishing</h4>
+                <p>Accepted articles are published with registered DOI and permanently archived online.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Announcements -->
+{% if announcements %}
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Journal Announcements</h2>
+        <div style="max-width:880px;margin:0 auto;">
+            {% for ann in announcements %}
+            <div class="card mb-3" style="border-left:5px solid var(--gold);">
+                <div class="card-body">
+                    <h4 style="font-family:var(--font-body);font-size:1.15rem;color:var(--primary);margin-bottom:0.4rem;">{{ ann.title }}</h4>
+                    {% if ann.publish_date %}
+                    <div style="font-size:0.875rem;color:var(--gray-500);margin-bottom:0.85rem;">Date: {{ ann.publish_date.strftime('%B %d, %Y') }}</div>
+                    {% endif %}
+                    {% if ann.content %}<div style="font-size:0.975rem;color:var(--gray-700);line-height:1.65;">{{ ann.content|safe }}</div>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Submit Your Next Research Paper</h2>
+        <p>Join scholars worldwide publishing in IJMMHRD. Benefit from transparent peer review and global dissemination.</p>
+        <a href="{{ url_for('public.submit_paper') }}" class="btn btn-gold btn-lg">Submit Your Paper Now</a>
+    </div>
+</section>
+{% endblock %}

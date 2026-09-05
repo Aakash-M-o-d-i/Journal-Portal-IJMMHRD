@@ -1,0 +1,75 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Volumes & Issues{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header"><h1>Volumes & Issues</h1></div>
+
+<div class="admin-grid-2col">
+    <div class="card">
+        <div class="card-header">Add Volume</div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('admin.add_volume') }}" data-validate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-row">
+                    <div class="form-group"><label>Volume Number *</label><input type="number" name="volume_number" class="form-control" placeholder="1" required></div>
+                    <div class="form-group"><label>Year *</label><input type="number" name="year" class="form-control" value="2026" required></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Create Volume</button>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        {% for vol in volumes %}
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-between align-center">
+                <span>Volume {{ vol.volume_number }} ({{ vol.year }})</span>
+                <div class="d-flex align-center gap-2">
+                    <span class="badge badge-submitted">{{ vol.issues|length }} issue(s)</span>
+                    <form method="post" action="{{ url_for('admin.delete_volume', vol_id=vol.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0.2rem 0.55rem;font-size:0.75rem;" data-confirm="Are you sure you want to remove Volume {{ vol.volume_number }} ({{ vol.year }}) and all its issues?">Delete Volume</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                {% for issue in vol.issues %}
+                <div class="d-flex justify-between align-center mb-2" style="padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
+                    <span>
+                        <strong>Issue {{ issue.issue_number }}</strong>{% if issue.title %} — {{ issue.title }}{% endif %}
+                        {% if issue.is_current %}<span class="badge badge-published" style="margin-left:0.5rem;">Current Issue</span>{% endif %}
+                    </span>
+                    <div class="d-flex gap-1 align-center">
+                        {% if not issue.is_current %}
+                        <form method="post" action="{{ url_for('admin.set_current_issue', issue_id=issue.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline">Set Current</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('admin.delete_issue', issue_id=issue.id) }}" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem;" data-confirm="Are you sure you want to remove Issue {{ issue.issue_number }}?">Remove Issue</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div style="margin-top:1.15rem;padding-top:0.85rem;border-top:1px solid var(--gray-200);">
+                    <div style="font-size:0.85rem;font-weight:700;color:var(--primary);margin-bottom:0.5rem;">Add New Issue to Volume {{ vol.volume_number }}</div>
+                    <form method="post" action="{{ url_for('admin.add_issue', vol_id=vol.id) }}" class="d-flex gap-2 align-center flex-wrap">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="number" name="issue_number" class="form-control" placeholder="Issue #" style="width:110px;" required>
+                        <input type="text" name="title" class="form-control" placeholder="Title (optional)" style="flex:1;min-width:180px;">
+                        <input type="date" name="publication_date" class="form-control" style="width:170px;">
+                        <button type="submit" class="btn btn-sm btn-primary">Add Issue</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not volumes %}
+        <div class="card text-center" style="padding:3rem 1.5rem;color:var(--gray-500);"><p>No volumes yet. Create one to start publishing issues.</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

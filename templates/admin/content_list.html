@@ -1,0 +1,53 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Content Pages{% endblock %}
+
+{% block admin_content %}
+<div class="cms-centered-container" style="max-width:960px; margin: 0 auto;">
+    <div class="admin-header d-flex justify-between align-center mb-4">
+        <div>
+            <h1 style="font-size:1.75rem; color:var(--primary); font-weight:700; margin-bottom:0.25rem;">📄 Content Pages (CMS)</h1>
+            <p class="text-muted" style="font-size:0.9rem; margin:0;">Manage journal static pages like About, Author Guidelines, Aim & Scope, and Peer Review Process.</p>
+        </div>
+        <a href="{{ url_for('admin.content_new') }}" class="btn btn-primary btn-sm" style="padding:0.5rem 1rem;">+ Create New Page</a>
+    </div>
+
+    <div class="card" style="box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: var(--radius-lg);">
+        <div class="card-header d-flex justify-between align-center" style="background:var(--gray-50); border-bottom:1px solid var(--gray-200); padding:1rem 1.25rem;">
+            <strong style="font-size:1.05rem; color:var(--primary-dark);">Static & CMS Pages ({{ pages|length }})</strong>
+        </div>
+        <div class="table-responsive" style="border:none; box-shadow:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:25%;">URL Slug</th>
+                        <th style="width:35%;">Page Title</th>
+                        <th style="width:15%;">Status</th>
+                        <th style="width:15%;">Last Updated</th>
+                        <th style="width:10%; text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for page in pages %}
+                <tr>
+                    <td><code style="font-size:0.875rem; color:var(--primary); background:var(--gray-100); padding:0.2rem 0.5rem; border-radius:4px; font-weight:600;">/{{ page.slug }}</code></td>
+                    <td><strong style="color:var(--primary-dark); font-size:0.95rem;">{{ page.title }}</strong></td>
+                    <td><span class="badge badge-{{ 'published' if page.status == 'published' else 'draft' }}">{{ page.status|capitalize }}</span></td>
+                    <td><span style="font-size:0.875rem; color:var(--gray-700);">{{ page.updated_at.strftime('%d %b %Y') }}</span></td>
+                    <td style="text-align:right;">
+                        <div class="d-flex gap-1 justify-end">
+                            <a href="{{ url_for('admin.content_edit', slug=page.slug) }}" class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.8rem;">✏️ Edit</a>
+                            <a href="{{ url_for('public.view_page', slug=page.slug) }}" class="btn btn-sm btn-gold" style="padding:0.25rem 0.6rem; font-size:0.8rem;" target="_blank">👁️ View</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not pages %}
+                <tr><td colspan="5" class="text-center text-muted" style="padding:3rem 1rem;">No pages created yet.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
