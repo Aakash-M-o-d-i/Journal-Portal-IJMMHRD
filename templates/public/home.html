@@ -63,7 +63,7 @@
     <div class="container">
         <h2 class="section-title">Journal Overview</h2>
         <div class="cms-content" style="max-width:860px;margin:0 auto;text-align:center;color:var(--gray-700);font-size:1.1rem;line-height:1.85;">
-            {{ intro.content|safe }}
+            {{ intro.content|sanitize }}
         </div>
     </div>
 </section>
@@ -200,7 +200,7 @@
                     {% if ann.publish_date %}
                     <div style="font-size:0.875rem;color:var(--gray-500);margin-bottom:0.85rem;">Date: {{ ann.publish_date.strftime('%B %d, %Y') }}</div>
                     {% endif %}
-                    {% if ann.content %}<div style="font-size:0.975rem;color:var(--gray-700);line-height:1.65;">{{ ann.content|safe }}</div>{% endif %}
+                    {% if ann.content %}<div style="font-size:0.975rem;color:var(--gray-700);line-height:1.65;">{{ ann.content|sanitize }}</div>{% endif %}
                 </div>
             </div>
             {% endfor %}

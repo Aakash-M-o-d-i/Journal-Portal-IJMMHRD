@@ -182,7 +182,7 @@ def archive_issue(volume_id, issue_id):
 
 @public.route('/search')
 def search():
-    q = request.args.get('q', '').strip()
+    q = request.args.get('q', '').strip()[:200]  # Cap at 200 chars to prevent abuse
     results = article_service.search_articles(q) if q else []
     return render_template('public/search.html', query=q, results=results)
 
@@ -211,7 +211,7 @@ def resolve_doi(doi=None, suffix=None):
             return redirect(url_for('public.article_detail', article_id=article.id))
 
     flash(f'DOI "{doi}" was not found.', 'error')
-    return redirect(url_for('public.index'))
+    return redirect(url_for('public.home'))
 
 
 @public.route('/contact', methods=['GET', 'POST'])
@@ -245,6 +245,22 @@ def view_page(slug):
     return render_template('public/static_page.html', page=page, title=page.title)
 
 
+# Allowed extensions for public upload serving (PDFs and docs only)
+_UPLOAD_SERVE_EXTENSIONS = {
+    '.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.gif'
+}
+
+
 @public.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    import os as _os
+    # Security: only serve whitelisted file types
+    ext = _os.path.splitext(filename)[1].lower()
+    if ext not in _UPLOAD_SERVE_EXTENSIONS:
+        return render_template('errors/404.html'), 404
+    # Security: prevent path traversal
+    safe_root = _os.path.realpath(current_app.config['UPLOAD_FOLDER'])
+    requested = _os.path.realpath(_os.path.join(safe_root, filename))
+    if not requested.startswith(safe_root + _os.sep):
+        return render_template('errors/404.html'), 404
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

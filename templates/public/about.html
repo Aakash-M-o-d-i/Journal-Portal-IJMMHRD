@@ -15,7 +15,7 @@
         <div class="card mb-4" style="padding:2.25rem;">
             <h2 style="font-size:1.6rem;color:var(--primary);margin-bottom:1rem;">{{ page.title }}</h2>
             <div class="cms-content" style="color:var(--gray-700);line-height:1.8;">
-                {{ page.content|safe }}
+                {{ page.content|sanitize }}
             </div>
         </div>
         {% endif %}
@@ -24,7 +24,7 @@
         <div class="card" style="padding:2.25rem;border-left:4px solid var(--gold);">
             <h2 style="font-size:1.6rem;color:var(--primary);margin-bottom:1rem;">{{ scope.title }}</h2>
             <div class="cms-content" style="color:var(--gray-700);line-height:1.8;">
-                {{ scope.content|safe }}
+                {{ scope.content|sanitize }}
             </div>
         </div>
         {% endif %}

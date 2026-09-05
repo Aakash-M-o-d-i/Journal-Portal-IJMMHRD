@@ -36,7 +36,7 @@
                 <div class="form-group"><label>Start Page</label><input type="number" name="page_start" class="form-control" value="{{ article.page_start or '' }}"></div>
                 <div class="form-group"><label>End Page</label><input type="number" name="page_end" class="form-control" value="{{ article.page_end or '' }}"></div>
             </div>
-            <div class="form-group"><label>Upload / Replace PDF File</label><input type="file" name="pdf_file" class="form-control" accept=".pdf"></div>
+            <div class="form-group"><label>Upload / Replace Manuscript File (PDF, DOC, DOCX)</label><input type="file" name="pdf_file" class="form-control" accept=".pdf,.doc,.docx"></div>
             {% if article.pdf_path %}<p class="text-small text-muted mb-3">Current PDF file: {{ article.pdf_path }}</p>{% endif %}
             <button type="submit" class="btn btn-primary">Save Article Changes</button>
         </form>

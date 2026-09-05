@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 import bcrypt
+from app import limiter
 from models import db
 from models.user import User
 from models.submission import Submission
@@ -33,16 +34,18 @@ def admin_required(f):
 # ── Auth ──────────────────────────────────────────────────────
 
 @admin.route('/login', methods=['GET', 'POST'])
+@limiter.limit('10 per minute', error_message='Too many login attempts. Please wait 1 minute.')
 def login():
     if current_user.is_authenticated and current_user.is_admin:
         return redirect(url_for('admin.dashboard'))
     if request.method == 'POST':
-        email = request.form.get('email', '').strip()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         user = User.query.filter_by(email=email).first()
-        if user and user.is_admin and bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        # Constant-time check: always run checkpw even on miss to prevent timing attacks
+        if user and user.is_admin and user.is_active and bcrypt.checkpw(password.encode(), user.password_hash.encode()):
             login_user(user)
-            AuditLog.log('login', 'user', user.id, user_id=user.id)
+            AuditLog.log('login', 'user', user.id, f'IP: {request.remote_addr}', user_id=user.id)
             return redirect(url_for('admin.dashboard'))
         flash('Invalid credentials.', 'error')
     return render_template('admin/login.html')
@@ -248,9 +251,14 @@ def article_direct_create():
             )
 
             if pdf and pdf.filename:
+                # Security: validate extension before saving
+                ext = os.path.splitext(secure_filename(pdf.filename))[1].lower()
+                if ext not in {'.pdf', '.doc', '.docx'}:
+                    flash('Only PDF and Word (.doc, .docx) files are accepted for article upload.', 'error')
+                    return redirect(url_for('admin.article_direct_create'))
                 pdf_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'articles')
                 os.makedirs(pdf_folder, exist_ok=True)
-                pdf_name = secure_filename(f"{article.article_id}.pdf")
+                pdf_name = secure_filename(f"{article.article_id}{ext}")
                 full_pdf_path = os.path.join(pdf_folder, pdf_name)
                 pdf.save(full_pdf_path)
                 article.pdf_path = f"articles/{pdf_name}"
@@ -282,9 +290,14 @@ def create_article(sub_id):
             # Handle PDF upload
             pdf = request.files.get('pdf_file')
             if pdf and pdf.filename:
+                # Security: validate extension before saving
+                ext = os.path.splitext(secure_filename(pdf.filename))[1].lower()
+                if ext not in {'.pdf', '.doc', '.docx'}:
+                    flash('Only PDF and Word (.doc, .docx) files are accepted.', 'error')
+                    return redirect(url_for('admin.create_article', sub_id=sub_id))
                 pdf_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'articles')
                 os.makedirs(pdf_folder, exist_ok=True)
-                pdf_name = secure_filename(f"{article.article_id}.pdf")
+                pdf_name = secure_filename(f"{article.article_id}{ext}")
                 pdf_path = os.path.join(pdf_folder, pdf_name)
                 pdf.save(pdf_path)
                 article.pdf_path = f"articles/{pdf_name}"
@@ -313,9 +326,14 @@ def article_edit(article_id):
         # PDF upload
         pdf = request.files.get('pdf_file')
         if pdf and pdf.filename:
+            # Security: validate extension before saving
+            ext = os.path.splitext(secure_filename(pdf.filename))[1].lower()
+            if ext not in {'.pdf', '.doc', '.docx'}:
+                flash('Only PDF and Word (.doc, .docx) files are accepted.', 'error')
+                return redirect(url_for('admin.article_edit', article_id=article_id))
             pdf_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'articles')
             os.makedirs(pdf_folder, exist_ok=True)
-            pdf_name = secure_filename(f"{article.article_id}.pdf")
+            pdf_name = secure_filename(f"{article.article_id}{ext}")
             pdf_path = os.path.join(pdf_folder, pdf_name)
             pdf.save(pdf_path)
             article.pdf_path = f"articles/{pdf_name}"
@@ -493,18 +511,46 @@ def users():
 @admin.route('/users/add', methods=['POST'])
 @admin_required
 def add_user():
-    pw = request.form['password']
+    # Only full admins can create users
+    if current_user.role != 'admin':
+        flash('Only administrators can create user accounts.', 'error')
+        return redirect(url_for('admin.users'))
+
+    pw = request.form.get('password', '')
+    email = request.form.get('email', '').strip().lower()
+    full_name = request.form.get('full_name', '').strip()
+    role = request.form.get('role', 'author')
+
+    # ── Input validation ──
+    if len(pw) < 8:
+        flash('Password must be at least 8 characters long.', 'error')
+        return redirect(url_for('admin.users'))
+    if not email or '@' not in email:
+        flash('A valid email address is required.', 'error')
+        return redirect(url_for('admin.users'))
+    if not full_name:
+        flash('Full name is required.', 'error')
+        return redirect(url_for('admin.users'))
+    if role not in ('admin', 'editor'):
+        flash('Invalid role selected.', 'error')
+        return redirect(url_for('admin.users'))
+
+    # ── Duplicate email check ──
+    if User.query.filter_by(email=email).first():
+        flash(f'An account with email "{email}" already exists.', 'error')
+        return redirect(url_for('admin.users'))
+
     hashed = bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
     u = User(
-        email=request.form['email'],
+        email=email,
         password_hash=hashed,
-        full_name=request.form['full_name'],
-        role=request.form.get('role', 'author')
+        full_name=full_name,
+        role=role
     )
     db.session.add(u)
     db.session.commit()
-    AuditLog.log('create_user', 'user', u.id, user_id=current_user.id)
-    flash('User created.', 'success')
+    AuditLog.log('create_user', 'user', u.id, f'Role: {role}', user_id=current_user.id)
+    flash(f'User account created for {full_name}.', 'success')
     return redirect(url_for('admin.users'))
 
 
@@ -514,24 +560,40 @@ def toggle_user(user_id):
     u = User.query.get_or_404(user_id)
     if u.id == current_user.id:
         flash('Cannot deactivate yourself.', 'error')
-    else:
-        u.is_active = not u.is_active
-        db.session.commit()
-        flash(f'User {"activated" if u.is_active else "deactivated"}.', 'success')
+        return redirect(url_for('admin.users'))
+    # Editors cannot modify admin accounts
+    if current_user.role != 'admin' and u.role == 'admin':
+        flash('Editors cannot modify administrator accounts.', 'error')
+        return redirect(url_for('admin.users'))
+    u.is_active = not u.is_active
+    db.session.commit()
+    AuditLog.log('toggle_user', 'user', u.id, f'Active: {u.is_active}', user_id=current_user.id)
+    flash(f'User {"activated" if u.is_active else "deactivated"}.', 'success')
     return redirect(url_for('admin.users'))
 
 
 @admin.route('/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
 def delete_user(user_id):
+    # Only full admins can delete users
+    if current_user.role != 'admin':
+        flash('Only administrators can delete user accounts.', 'error')
+        return redirect(url_for('admin.users'))
     if user_id == current_user.id:
         flash('Cannot delete your own admin account while logged in.', 'error')
         return redirect(url_for('admin.users'))
     u = User.query.get_or_404(user_id)
+    # Prevent deletion of the last admin account
+    if u.role == 'admin':
+        remaining_admins = User.query.filter_by(role='admin', is_active=True).count()
+        if remaining_admins <= 1:
+            flash('Cannot delete the last active administrator account.', 'error')
+            return redirect(url_for('admin.users'))
+    deleted_name = u.full_name
     db.session.delete(u)
     db.session.commit()
-    AuditLog.log('delete_user', 'user', user_id, user_id=current_user.id)
-    flash('User account deleted successfully.', 'success')
+    AuditLog.log('delete_user', 'user', user_id, f'Deleted: {deleted_name}', user_id=current_user.id)
+    flash(f'User account "{deleted_name}" deleted successfully.', 'success')
     return redirect(url_for('admin.users'))
 
 

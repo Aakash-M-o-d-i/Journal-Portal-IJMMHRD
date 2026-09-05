@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from models import db
 from models.submission import Submission, SubmissionAuthor, SubmissionFile
 
-ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'odt', 'rtf'}
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 
 
 def allowed_file(filename):

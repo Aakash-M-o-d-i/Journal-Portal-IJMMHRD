@@ -13,7 +13,7 @@
         <div class="card" style="padding:2.25rem;">
             {% if page %}
             <div class="cms-content">
-                {{ page.content|safe }}
+                {{ page.content|sanitize }}
             </div>
             {% else %}
             <div class="empty-state text-center" style="padding:2.5rem 1.5rem;color:var(--gray-500);">

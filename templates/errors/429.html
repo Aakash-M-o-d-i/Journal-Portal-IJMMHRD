@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Too Many Requests{% endblock %}
+
+{% block content %}
+<section class="section" style="text-align:center;padding:6rem 0;">
+    <div class="container" style="max-width:540px;">
+        <div style="font-family:var(--font-heading);font-size:5.5rem;font-weight:800;color:var(--primary);line-height:1;margin-bottom:0.5rem;">429</div>
+        <h2 style="font-size:1.85rem;color:var(--primary);margin-bottom:0.75rem;">Too Many Requests</h2>
+        <p style="color:var(--gray-600);margin-bottom:1.5rem;line-height:1.7;">
+            {{ error if error else 'You have made too many requests in a short period. Please wait a moment before trying again.' }}
+        </p>
+        <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:2rem;">If you believe this is an error, please contact the editorial office.</p>
+        <div class="d-flex gap-2 justify-between flex-wrap" style="justify-content:center;">
+            <a href="{{ url_for('public.home') }}" class="btn btn-primary btn-lg">Return to Home Page</a>
+            <a href="{{ url_for('public.contact') }}" class="btn btn-outline btn-lg">Contact Us</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

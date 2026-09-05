@@ -17,7 +17,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <label>Revised Manuscript (PDF, DOC, DOCX)</label>
-                        <input type="file" name="revision_file" class="form-control" accept=".pdf,.doc,.docx,.odt,.rtf" required>
+                        <input type="file" name="revision_file" class="form-control" accept=".pdf,.doc,.docx" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Upload Revision</button>
                     <a href="{{ url_for('author.paper_detail', paper_id=submission.paper_id) }}" class="btn btn-outline">Cancel</a>

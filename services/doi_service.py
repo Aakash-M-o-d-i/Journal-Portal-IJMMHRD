@@ -1,4 +1,4 @@
-import random
+import secrets
 from datetime import datetime
 from models import db
 from models.article import Article
@@ -6,7 +6,7 @@ from models.content import Setting
 
 
 def generate_doi(article_id, force=False):
-    """Generate a realistic random DOI identifier for an article."""
+    """Generate a unique DOI identifier for an article using cryptographically secure randomness."""
     article = Article.query.get_or_404(article_id)
     if article.doi and article.doi_status != 'pending' and not force:
         raise ValueError("DOI already generated for this article.")
@@ -17,8 +17,15 @@ def generate_doi(article_id, force=False):
         Setting.set('doi_prefix', prefix)
 
     year = datetime.now().year
-    random_suffix = random.randint(100000, 999999)
-    doi = f"{prefix}/ijmmhrd.{year}.{random_suffix}"
+    # Cryptographically random suffix; retry until unique
+    for _ in range(10):
+        suffix = secrets.randbelow(900000) + 100000  # 100000–999999
+        doi = f"{prefix}/ijmmhrd.{year}.{suffix}"
+        if not Article.query.filter_by(doi=doi).first():
+            break
+    else:
+        # Fallback: use article ID for guaranteed uniqueness
+        doi = f"{prefix}/ijmmhrd.{year}.{article.id:06d}"
 
     article.doi = doi
     if not article.doi_status or article.doi_status == 'pending':
