@@ -48,10 +48,17 @@
                     <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
                     <td>
                         {% if u.id != current_user.id %}
-                        <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" style="display:inline;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-outline">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
-                        </form>
+                        <div class="d-flex gap-1 align-center">
+                            <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.id) }}" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to permanently delete user account: {{ u.full_name }} ({{ u.email }})?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm" style="background:#ef4444; color:#fff; border:none; padding:0.3rem 0.65rem; font-size:0.8rem; border-radius:4px; cursor:pointer;" title="Delete User Account">🗑️ Delete</button>
+                            </form>
+                        </div>
                         {% else %}
                         <span class="text-muted text-small">(Current User)</span>
                         {% endif %}

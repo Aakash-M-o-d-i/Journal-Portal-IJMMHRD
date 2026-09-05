@@ -14,12 +14,14 @@
     <!-- Top Bar -->
     <div class="top-bar">
         <div class="container">
-            <div class="top-bar-info">
+            <div class="top-bar-info" style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
                 <span class="top-bar-badge">OPEN ACCESS</span>
-                <span>{{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}</span>
+                <span class="top-bar-badge" style="background:#10b981; color:#ffffff; font-weight:700;">ESTD: 2018</span>
+                <span class="top-bar-badge" style="background:#f59e0b; color:#0f172a; font-weight:700;">UGC APPROVED NO. 64537</span>
+                <span style="font-weight:600;">{{ site_settings.get('journal_name', 'International Journal of Multidisciplinary Modern Research and Development') }}</span>
             </div>
             <div>
-                <span>ISSN: <strong>{{ site_settings.get('journal_issn', 'XXXX-XXXX') }}</strong></span>
+                <span>ISSN: <strong>{{ site_settings.get('journal_issn', '2321 - 8622') }}</strong></span>
                 <span style="margin:0 0.5rem;opacity:0.4;">|</span>
                 <a href="mailto:{{ site_settings.get('journal_email', 'editor@ijmmhrd.com') }}">{{ site_settings.get('journal_email', 'editor@ijmmhrd.com') }}</a>
             </div>
@@ -29,9 +31,17 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('public.home') }}" class="navbar-brand">
-                <span class="brand-icon">IJ</span>
-                {{ site_settings.get('journal_abbr', 'IJMMHRD') }}
+            <a href="{{ url_for('public.home') }}" class="navbar-brand" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="WPH Logo" style="height:44px; width:44px; object-fit:cover; border-radius:50%; box-shadow:0 3px 10px rgba(0,0,0,0.18); border:2px solid var(--white); flex-shrink:0;">
+                <div style="display:flex; flex-direction:column; line-height:1.2;">
+                    <span style="font-weight:800; font-size:1.25rem; color:var(--primary); letter-spacing:-0.02em; display:flex; align-items:center; gap:0.4rem;">
+                        <span>IJMMHRD</span>
+                        <span style="font-size:0.65rem; background:rgba(16, 185, 129, 0.12); color:#047857; padding:0.1rem 0.4rem; border-radius:4px; font-weight:700; border:1px solid rgba(16, 185, 129, 0.3);">ESTD: 2018</span>
+                    </span>
+                    <span style="font-size:0.64rem; color:var(--gray-600); font-weight:700; text-transform:uppercase; letter-spacing:0.2px; line-height:1.25;">
+                        Int. Journal of Multidisciplinary<br>Modern Research & Development
+                    </span>
+                </div>
             </a>
 
             <button class="nav-toggle" aria-label="Toggle navigation">
@@ -42,8 +52,11 @@
                 <li class="nav-item">
                     <a href="{{ url_for('public.home') }}" class="nav-link {{ 'active' if request.endpoint == 'public.home' }}">Home</a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">Authors ▾</a>
+                <li class="nav-item has-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">
+                        <span>Authors</span>
+                        <span class="nav-arrow">▾</span>
+                    </a>
                     <ul class="nav-dropdown">
                         <li><a href="{{ url_for('public.paper_format') }}">Paper Format</a></li>
                         <li><a href="{{ url_for('public.submit_paper') }}">Submit Paper</a></li>
@@ -53,9 +66,12 @@
                         <li><a href="{{ url_for('public.charges') }}">Processing Charges</a></li>
                     </ul>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('public.research_areas') }}" class="nav-link {{ 'active' if 'research' in (request.endpoint or '') or 'discipline' in (request.endpoint or '') }}">Research Areas ▾</a>
-                    <ul class="nav-dropdown" style="min-width:280px;">
+                <li class="nav-item has-dropdown">
+                    <a href="{{ url_for('public.research_areas') }}" class="nav-link dropdown-toggle {{ 'active' if 'research' in (request.endpoint or '') or 'discipline' in (request.endpoint or '') }}">
+                        <span>Research Areas</span>
+                        <span class="nav-arrow">▾</span>
+                    </a>
+                    <ul class="nav-dropdown">
                         {% for area_item in nav_research_areas[:9] %}
                         <li><a href="{{ url_for('public.discipline_detail', slug=area_item.slug) }}">{{ area_item.name }} Journal</a></li>
                         {% endfor %}

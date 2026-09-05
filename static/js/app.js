@@ -6,10 +6,41 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.querySelector('.nav-toggle');
     const menu = document.querySelector('.nav-menu');
     if (toggle && menu) {
-        toggle.addEventListener('click', function () {
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
             menu.classList.toggle('open');
         });
     }
+
+    // ── Admin Mobile Sidebar Toggle ──────────────────────────
+    const adminToggle = document.getElementById('adminSidebarToggle');
+    const adminSidebar = document.getElementById('adminSidebar');
+    if (adminToggle && adminSidebar) {
+        adminToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            adminSidebar.classList.toggle('open');
+            adminToggle.classList.toggle('active');
+        });
+    }
+
+    // ── Mobile Submenu Accordion Toggle ──────────────────────
+    document.querySelectorAll('.nav-item.has-dropdown .dropdown-toggle').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            if (window.innerWidth <= 992) {
+                e.preventDefault();
+                var parentItem = this.closest('.nav-item');
+                if (parentItem) {
+                    var isOpen = parentItem.classList.contains('dropdown-open');
+                    document.querySelectorAll('.nav-item.has-dropdown').forEach(function (item) {
+                        item.classList.remove('dropdown-open');
+                    });
+                    if (!isOpen) {
+                        parentItem.classList.add('dropdown-open');
+                    }
+                }
+            }
+        });
+    });
 
     // ── Flash Message Auto-dismiss ───────────────────────────
     document.querySelectorAll('.alert').forEach(function (el) {

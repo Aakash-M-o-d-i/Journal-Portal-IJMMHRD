@@ -521,6 +521,20 @@ def toggle_user(user_id):
     return redirect(url_for('admin.users'))
 
 
+@admin.route('/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    if user_id == current_user.id:
+        flash('Cannot delete your own admin account while logged in.', 'error')
+        return redirect(url_for('admin.users'))
+    u = User.query.get_or_404(user_id)
+    db.session.delete(u)
+    db.session.commit()
+    AuditLog.log('delete_user', 'user', user_id, user_id=current_user.id)
+    flash('User account deleted successfully.', 'success')
+    return redirect(url_for('admin.users'))
+
+
 # ── Content Management ────────────────────────────────────────
 
 @admin.route('/content')

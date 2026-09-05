@@ -7,9 +7,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <!-- Mobile Admin Top Bar -->
+    <div class="admin-mobile-header">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <h3 style="margin:0; font-size:1.1rem; color:#ffffff; font-family:var(--font-heading);">IJMMHRD Admin</h3>
+        </div>
+        <button type="button" class="admin-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle Navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" id="adminSidebar">
             <div class="admin-sidebar-brand">
                 <h3>IJMMHRD</h3>
                 <small>Editorial Administration</small>
